@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="HEC Pagos">
+<meta name="theme-color" content="#ffffff">
+<title>HEC · Pagos</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23ffffff'/><text y='72' x='50' text-anchor='middle' font-size='58' font-family='Georgia,serif' fill='%231a1a18'>$</text></svg>">
+<style>
+  :root{
+    --paper:#ffffff;
+    --ink:#1a1a18;
+    --muted:#6b6a66;
+    --line:#e4e2dd;
+    --line-soft:#f0efeb;
+    --ok-bg:#eaf3de;
+    --ok-ink:#27500a;
+    --err:#a32d2d;
+    --err-bg:#fceaea;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:#f3f2ef;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    justify-content:center;
+    padding:env(safe-area-inset-top) 12px calc(24px + env(safe-area-inset-bottom));
+  }
+  .sheet{
+    width:100%;
+    max-width:460px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:12px;
+    margin-top:12px;
+    padding:20px;
+    align-self:flex-start;
+  }
+  .top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:20px;
+  }
+  .top h1{font-size:17px;font-weight:600;margin:0;letter-spacing:.2px;}
+  .top span{font-size:12px;color:var(--muted);}
+  .amount-wrap{margin-bottom:22px;}
+  .amount-wrap label{display:block;font-size:12px;color:var(--muted);margin-bottom:2px;}
+  .amount-line{display:flex;align-items:baseline;gap:2px;border-bottom:1.5px solid var(--ink);padding-bottom:4px;}
+  .amount-line .cur{font-size:24px;color:var(--muted);}
+  #monto{
+    flex:1;
+    border:none;
+    outline:none;
+    background:transparent;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:34px;
+    color:var(--ink);
+    padding:0;
+    width:100%;
+    min-width:0;
+  }
+  #monto::placeholder{color:#c9c7c2;}
+  .amount-line .mxn{font-size:13px;color:var(--muted);}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
+  input[type=text],input[type=date],select{
+    width:100%;
+    font-family:inherit;
+    font-size:16px;
+    color:var(--ink);
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:11px 12px;
+    outline:none;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  input:focus,select:focus{border-color:var(--ink);}
+  #comprobante{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.5px;}
+  select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6a66' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;}
+  .row{display:flex;gap:10px;}
+  .row .field{flex:1;min-width:0;}
+  button{
+    width:100%;
+    font-family:inherit;
+    font-size:15px;
+    font-weight:600;
+    color:var(--paper);
+    background:var(--ink);
+    border:none;
+    border-radius:8px;
+    padding:14px;
+    margin-top:8px;
+    cursor:pointer;
+  }
+  button:active{opacity:.85;}
+  button:disabled{opacity:.5;}
+  .msg{
+    margin-top:14px;
+    font-size:14px;
+    border-radius:8px;
+    padding:11px 12px;
+    display:none;
+  }
+  .msg.ok{display:block;background:var(--ok-bg);color:var(--ok-ink);}
+  .msg.err{display:block;background:var(--err-bg);color:var(--err);}
+  .last{
+    margin-top:18px;
+    padding-top:14px;
+    border-top:1px solid var(--line-soft);
+    font-size:12px;
+    color:var(--muted);
+    display:none;
+  }
+  .last b{font-weight:600;color:var(--ink);}
+</style>
+</head>
+<body>
+<main class="sheet">
+  <div class="top">
+    <h1>Registro de pagos</h1>
+    <span>HEC</span>
+  </div>
+
+  <div class="amount-wrap">
+    <label for="monto">Cantidad pagada</label>
+    <div class="amount-line">
+      <span class="cur">$</span>
+      <input id="monto" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off">
+      <span class="mxn">MXN</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="alumno">Nombre del alumno</label>
+    <input id="alumno" type="text" autocomplete="off" autocapitalize="words" placeholder="Nombre y apellido">
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="mes">Mes</label>
+      <select id="mes"></select>
+    </div>
+    <div class="field">
+      <label for="comprobante">Comprobante</label>
+      <input id="comprobante" type="text" inputmode="numeric" autocomplete="off" placeholder="0148">
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="recibio">¿Quién recibió?</label>
+    <select id="recibio">
+      <option value="" disabled selected>Selecciona</option>
+      <option value="Julieta">Julieta</option>
+      <option value="Paola">Paola</option>
+    </select>
+  </div>
+
+  <button id="enviar">Registrar pago</button>
+  <div class="msg" id="msg"></div>
+  <div class="last" id="last"></div>
+</main>
+
+<script>
+const ENDPOINT = "PEGA_AQUI_LA_URL_DE_TU_APPS_SCRIPT";
+
+const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+               "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+const $ = id => document.getElementById(id);
+const monto = $("monto"), alumno = $("alumno"), mes = $("mes"),
+      comprobante = $("comprobante"), recibio = $("recibio"),
+      boton = $("enviar"), msg = $("msg"), last = $("last");
+
+// 12 meses en orden cronológico: 5 atrás, el actual y 6 adelante.
+// El año va en la etiqueta, así "Enero 2027" nunca cae en la hoja de 2026.
+function llenarMeses() {
+  const hoy = new Date();
+  mes.innerHTML = "";
+  for (let i = -5; i <= 6; i++) {
+    const d = new Date(hoy.getFullYear(), hoy.getMonth() + i, 1);
+    const etiqueta = MESES[d.getMonth()] + " " + d.getFullYear();
+    const opt = document.createElement("option");
+    opt.value = etiqueta;
+    opt.textContent = etiqueta;
+    if (i === 0) opt.selected = true;
+    mes.appendChild(opt);
+  }
+}
+llenarMeses();
+
+try {
+  const prev = localStorage.getItem("hec_recibio");
+  if (prev) recibio.value = prev;
+} catch (e) {}
+
+monto.addEventListener("blur", () => {
+  const n = parseFloat(monto.value.replace(/[^0-9.]/g, ""));
+  if (!isNaN(n)) monto.value = n.toFixed(2);
+});
+
+function aviso(texto, tipo) {
+  msg.textContent = texto;
+  msg.className = "msg " + tipo;
+}
+
+boton.addEventListener("click", async () => {
+  const cantidad = parseFloat(monto.value.replace(/[^0-9.]/g, ""));
+
+  if (!alumno.value.trim()) return aviso("Falta el nombre del alumno.", "err");
+  if (isNaN(cantidad) || cantidad <= 0) return aviso("La cantidad no es válida.", "err");
+  if (!mes.value) return aviso("Selecciona el mes que cubre el pago.", "err");
+  if (!comprobante.value.trim()) return aviso("Falta el número de comprobante.", "err");
+  if (!recibio.value) return aviso("Selecciona quién recibió el pago.", "err");
+
+  boton.disabled = true;
+  boton.textContent = "Registrando…";
+  msg.className = "msg";
+
+  const datos = {
+    alumno: alumno.value.trim(),
+    cantidad: cantidad,
+    mes: mes.value,
+    comprobante: comprobante.value.trim(),
+    recibio: recibio.value
+  };
+
+  try {
+    if (!ENDPOINT.startsWith("https://")) throw new Error("La app no está conectada a la hoja.");
+
+    const r = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(datos)
+    });
+    const res = await r.json();
+    if (!res.ok) throw new Error(res.error || "La hoja rechazó el registro.");
+
+    aviso("Pago registrado en " + datos.mes + ".", "ok");
+    last.style.display = "block";
+    last.textContent = "";
+    last.append("Último: ");
+    const b = document.createElement("b");
+    b.textContent = datos.alumno;
+    last.append(b, " · $" +
+      datos.cantidad.toLocaleString("es-MX", {minimumFractionDigits:2}) +
+      " · " + datos.mes + " · comprobante " + datos.comprobante);
+
+    try { localStorage.setItem("hec_recibio", datos.recibio); } catch (e) {}
+
+    monto.value = "";
+    alumno.value = "";
+    comprobante.value = "";
+    llenarMeses();
+    alumno.focus();
+  } catch (err) {
+    const texto = (err instanceof TypeError)
+      ? "No se pudo conectar. Revisa tu internet e intenta otra vez."
+      : "No se registró: " + err.message;
+    aviso(texto, "err");
+  }
+
+  boton.disabled = false;
+  boton.textContent = "Registrar pago";
+});
+</script>
+</body>
+</html>
